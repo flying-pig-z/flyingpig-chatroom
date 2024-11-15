@@ -23,9 +23,21 @@ public class Result {
         return new Result(StatusCode.OK, "success", data);
     }
 
-    //失败响应
-    public static Result error(Integer code,String msg) {
+    public static Result success(Integer code, String msg, Object data) {
+        return new Result(code, msg, data);
+    }
+
+    public static Result success(Integer code, String msg) {
         return new Result(code, msg, null);
+    }
+
+    //失败响应
+    public static Result error(Integer code, String msg) {
+        return new Result(code, msg, null);
+    }
+
+    public static Result error(String msg) {
+        return new Result(StatusCode.SERVERERROR, msg, null);
     }
 
 }

@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://111.229.173.12:3306/pig-chat
+    url: jdbc:mysql://8.210.250.29:3306/pig-chat
     username: root
     password: '@Aa123456'
   redis:
@@ -13,7 +13,7 @@ spring:
   mail:
     host: smtp.qq.com
     username: flying_pig_z@qq.com
-    password:
+    password: elwzkcwfmgibddbf
     default-encoding: UTF-8
     port: 465
     properties:
@@ -23,8 +23,10 @@ spring:
             class: javax.net.ssl.SSLSocketFactory
           ssl:
             enable: true
-        debug: true
 #持久层配置
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+logging:
+  level:
+    com.flyingpig.chat: DEBUG

@@ -12,6 +12,12 @@ public class RedisConstants {
 
     public static final String EMAIL_VERIFYCODE_KEY="email:verifycode:";
 
-    public static final Long EMAIL_VERIFYCODE_TTL=120L;
+    public static final Long EMAIL_VERIFYCODE_TTL=300L;
+
+
+    public static final String UNREAD_MESSAGE_KEY = "unread-message:";
+
+    public static final String MESSAGE_LIST_KEY = "message-list:";
+
 
 }

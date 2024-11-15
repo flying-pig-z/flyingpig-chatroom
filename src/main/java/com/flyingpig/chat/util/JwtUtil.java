@@ -1,6 +1,8 @@
 package com.flyingpig.chat.util;
 
 import io.jsonwebtoken.*;
+
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.*;
@@ -9,7 +11,7 @@ public class JwtUtil {
     //有效期为
     public static final Long JWT_TTL = 30*24*60 * 60 * 1000L;// 60 * 60 *1000  一个小时
     //设置秘钥明文
-    public static final String JWT_KEY = "Zmx5aW5ncGln";//flyingpig的base64编码
+    public static final String JWT_KEY = "EiGiWJ8yh5j+RNlOCcWxXnV6pyMRu6+ORDTDHW6xjGM=";//flyingpig的base64编码
 
     /**
      * 生成加密后的秘钥 secretKey
@@ -17,17 +19,16 @@ public class JwtUtil {
      * @return
      */
     public static SecretKey generalKey() {
-        //将密钥明文base64解码后通过aes算法进行加密
-        byte[] encodedKey = Base64.getDecoder().decode(JwtUtil.JWT_KEY);
-        SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
-        return key;
+        //将密钥明文base64解码后进行加密
+        byte[] keyBytes = Base64.getDecoder().decode(JwtUtil.JWT_KEY);
+        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
     }
 
 
     public static String getUUID() {
-        String token = UUID.randomUUID().toString().replaceAll("-", "");
-        return token;
+        return UUID.randomUUID().toString().replace("-", "");
     }
+
 
     /**
      * 生成jtw
@@ -85,7 +86,7 @@ public class JwtUtil {
                 .setIssuer("flyingpig")     // 签发者
                 .setIssuedAt(now)      // 签发时间
                 .setExpiration(expDate)  //过期时间
-                .signWith(signatureAlgorithm, secretKey); //使用HS256对称加密算法签名, 第二个参数为秘钥
+                .signWith(secretKey);  // The algorithm will be inferred from the SecretKey type
 
     }
 
@@ -94,10 +95,12 @@ public class JwtUtil {
     //解析JWT令牌的payload自定义信息
     public static Claims parseJwt(String jwt) {
         SecretKey secretKey = generalKey();
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
+                .build()
                 .parseClaimsJws(jwt)
                 .getBody();
+
     }
 
 
@@ -116,9 +119,15 @@ public class JwtUtil {
 
     //进行base64编码的测试类
     public static void main(String[] args) throws Exception {
-        String jwtKey = "flyingpig";
-        String encodedKey = Base64.getEncoder().encodeToString(jwtKey.getBytes());
-        System.out.println(encodedKey);
+        // Generate a 256-bit key (32 bytes)
+        KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+        keyGen.init(256); // for HS256
+        SecretKey secretKey = keyGen.generateKey();
+
+        // Encode the key in Base64
+        String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        System.out.println("New JWT Secret Key: " + encodedKey);
     }
+
 
 }
