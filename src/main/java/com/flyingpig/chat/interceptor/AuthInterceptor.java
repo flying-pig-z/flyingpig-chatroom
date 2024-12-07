@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flyingpig.chat.dataobject.common.Result;
 import com.flyingpig.chat.dataobject.constant.StatusCode;
 import com.flyingpig.chat.util.JwtUtil;
-import com.flyingpig.chat.util.UserContext;
+import com.flyingpig.chat.util.UserIdContext;
 import com.flyingpig.chat.util.cache.CacheUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -61,14 +61,14 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // 记录用户访问的接口信息
         log.info("用户{}访问接口：{}，请求方法：{}", userId, request.getRequestURI(), request.getMethod());
-        UserContext.setUser(userId);
+        UserIdContext.setUserId(userId);
         return true; // 返回 true 继续处理请求，false 则中断请求
     }
 
     // 在控制器方法调用之后执行，但在视图渲染之前调用
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, org.springframework.web.servlet.ModelAndView modelAndView) throws Exception {
-        UserContext.removeUser();
+        UserIdContext.removeUserId();
     }
 
     /**

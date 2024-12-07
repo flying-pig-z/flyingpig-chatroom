@@ -2,7 +2,7 @@ package com.flyingpig.chat.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flyingpig.chat.dataobject.dto.response.RoomInfo;
-import com.flyingpig.chat.dataobject.dto.response.RoomSession;
+import com.flyingpig.chat.dataobject.dto.response.RoomWithReadMessage;
 import com.flyingpig.chat.dataobject.eneity.GroupRoom;
 
 import java.util.List;
@@ -17,9 +17,11 @@ import java.util.List;
  */
 public interface IGroupRoomService extends IService<GroupRoom> {
 
-    List<RoomSession> listUserGroupRoomSession();
+    List<RoomWithReadMessage> listUserGroupRoomWithReadMessage();
 
     List<GroupRoom> search(String name);
 
     List<RoomInfo> listUserGroupRoom();
+
+    Boolean addGroupRoom(String name, String introduce);
 }

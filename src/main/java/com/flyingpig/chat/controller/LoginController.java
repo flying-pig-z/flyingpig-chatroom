@@ -6,7 +6,7 @@ import com.flyingpig.chat.dataobject.dto.request.EmailRegisterReq;
 import com.flyingpig.chat.dataobject.dto.request.LoginReq;
 import com.flyingpig.chat.service.LoginService;
 import com.flyingpig.chat.util.EmailUtil;
-import com.flyingpig.chat.util.UserContext;
+import com.flyingpig.chat.util.UserIdContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import static com.flyingpig.chat.dataobject.constant.RedisConstants.EMAIL_VERIFYCODE_KEY;
 
 @Api("登录注册操作相关的api")
@@ -42,17 +38,14 @@ public class LoginController {
             System.out.println(loginReq);
             return loginService.login(loginReq);
         } catch (RedisConnectionFailureException e) {
-            return Result.error(StatusCode.SERVERERROR, "redis崩溃");
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return Result.error(StatusCode.SERVERERROR, e.getMessage());
+            throw new RuntimeException("redis崩溃");
         }
     }
 
     @PostMapping("/user/logout")
     @ApiOperation("用户登出")
     public Result logout() {
-        return loginService.logout(UserContext.getUser());
+        return loginService.logout(UserIdContext.getUserId());
     }
 
     @GetMapping("/email/verificationCode")
@@ -76,12 +69,11 @@ public class LoginController {
             try {
                 loginService.registerUser(emailRegisterReq);
             } catch (DuplicateKeyException dke) {
-                log.error("用户名或邮箱重复注册");
-                Result.error(StatusCode.SERVERERROR, "用户名或邮箱重复注册");
+                throw new RuntimeException("用户名或邮箱重复注册");
             }
             return Result.success("添加成功");
         } else {
-            return Result.error(StatusCode.SERVERERROR, "验证码验证错误");
+            throw new RuntimeException("验证码验证错误");
         }
     }
 

@@ -6,6 +6,7 @@ import com.flyingpig.chat.service.IGroupRoomService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/group-room")
 public class GroupRoomController {
 
+
     @Autowired
     private IGroupRoomService groupRoomService;
 
@@ -30,10 +32,10 @@ public class GroupRoomController {
         return Result.success(groupRoomService.search(name));
     }
 
-    @GetMapping("/user-group-room")
-    @ApiOperation("查询用户自己的群聊会话列表")
-    public Result listUserGroupRoom() {
-        return Result.success(groupRoomService.listUserGroupRoom());
+    @PostMapping
+    @ApiOperation("添加群聊")
+    public Result addGroupRoom(String name, String introduce) {
+        return Result.success(groupRoomService.addGroupRoom(name, introduce));
     }
 
 

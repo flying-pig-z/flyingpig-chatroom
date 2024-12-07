@@ -1,7 +1,7 @@
 package com.flyingpig.chat.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.flyingpig.chat.dataobject.eneity.Application;
+import com.flyingpig.chat.dataobject.eneity.GroupApplication;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import com.flyingpig.chat.dataobject.eneity.Application;
  * @author flyingpig
  * @since 2024-11-07
  */
-public interface ApplicationMapper extends BaseMapper<Application> {
+public interface GroupApplicationMapper extends BaseMapper<GroupApplication> {
 
 }

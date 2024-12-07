@@ -45,4 +45,13 @@ public class GroupRoomMembersServiceImpl extends ServiceImpl<GroupRoomMembersMap
 
         return userIdList;
     }
+
+    @Override
+    public List<Long> listGroupRoomMembers(Long groupRoomId) {
+        return this.list(new LambdaQueryWrapper<GroupRoomMembers>()
+                                .eq(GroupRoomMembers::getGroupRoomId, groupRoomId))
+                .stream()
+                .map(GroupRoomMembers::getUserId)
+                .collect(Collectors.toList());
+    }
 }

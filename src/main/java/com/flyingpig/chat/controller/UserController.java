@@ -8,10 +8,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,7 +32,7 @@ public class UserController {
 
     @ApiOperation("获取自身的信息")
     @GetMapping("/info")
-    public Result getUserInfoByUserId() {
+    public Result getUserInfo() {
         return Result.success(userService.getUserInfoByUserId());
     }
 
@@ -42,5 +40,20 @@ public class UserController {
     @GetMapping("/info-list")
     public Result listUserInfosByUserIdList(@RequestParam List<Long> userIds) {
         return Result.success(userService.listUserInfosByUserIdList(userIds));
+    }
+
+    @ApiOperation("修改自身的信息")
+    @PutMapping("/info")
+    public Result modifyUserInfo(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String password,
+            @RequestParam(required = false) MultipartFile avatarFile) {
+        log.info("username: {}, password: {}", username, password);
+        if (avatarFile != null) {
+            log.info("avatarFile: {}", avatarFile.getOriginalFilename());
+        }
+
+        userService.modifyUserInfo(username, password, avatarFile);
+        return Result.success();
     }
 }

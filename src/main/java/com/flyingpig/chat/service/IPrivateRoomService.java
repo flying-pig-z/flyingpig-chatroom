@@ -2,7 +2,7 @@ package com.flyingpig.chat.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flyingpig.chat.dataobject.dto.response.RoomInfo;
-import com.flyingpig.chat.dataobject.dto.response.RoomSession;
+import com.flyingpig.chat.dataobject.dto.response.RoomWithReadMessage;
 import com.flyingpig.chat.dataobject.eneity.PrivateRoom;
 import com.flyingpig.chat.websocket.message.resp.ChatRespMessage;
 
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IPrivateRoomService extends IService<PrivateRoom> {
 
-    List<RoomSession> listUserPrivateRoomSession();
+    List<RoomWithReadMessage> listUserPrivateRoomWithReadMessage();
 
     Long getSendToUserId(ChatRespMessage chatRespMessage);
 

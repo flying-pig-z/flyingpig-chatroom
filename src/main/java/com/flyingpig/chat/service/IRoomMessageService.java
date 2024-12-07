@@ -2,6 +2,7 @@ package com.flyingpig.chat.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flyingpig.chat.dataobject.eneity.RoomMessage;
+import com.flyingpig.chat.listener.event.ChatMessageEvent;
 
 import java.util.List;
 
@@ -16,4 +17,7 @@ import java.util.List;
 public interface IRoomMessageService extends IService<RoomMessage> {
 
     List<RoomMessage> listRoomMessage(Long roomId);
+
+
+    void saveChatMessageToDB(ChatMessageEvent event);
 }

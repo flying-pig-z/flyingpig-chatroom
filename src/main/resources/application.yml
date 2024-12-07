@@ -1,6 +1,10 @@
 server:
   port: 9090
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://8.210.250.29:3306/pig-chat
@@ -13,7 +17,7 @@ spring:
   mail:
     host: smtp.qq.com
     username: flying_pig_z@qq.com
-    password: elwzkcwfmgibddbf
+    password:
     default-encoding: UTF-8
     port: 465
     properties:

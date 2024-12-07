@@ -17,4 +17,6 @@ import java.util.List;
 public interface IGroupRoomMembersService extends IService<GroupRoomMembers> {
 
     List<Long> listGroupMemsExpSelf(ChatRespMessage respMsg);
+
+    List<Long> listGroupRoomMembers(Long groupRoomId);
 }

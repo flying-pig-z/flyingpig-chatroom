@@ -5,17 +5,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flyingpig.chat.dataobject.common.Result;
 import com.flyingpig.chat.listener.event.ChatMessageEvent;
-import com.flyingpig.chat.listener.event.ChatStatusToReadEvent;
 import com.flyingpig.chat.service.IGroupRoomMembersService;
 import com.flyingpig.chat.service.IPrivateRoomService;
-import com.flyingpig.chat.websocket.cache.MessageCacheManager;
+import com.flyingpig.chat.service.IRoomMessageService;
 import com.flyingpig.chat.websocket.message.req.ChatReqMessage;
 import com.flyingpig.chat.websocket.message.resp.ChatRespMessage;
 import com.flyingpig.chat.websocket.message.resp.WebSocketRespCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -27,14 +25,14 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class ChatHandler extends TextWebSocketHandler {
+public class SimpleChatHandler extends TextWebSocketHandler {
 
 
     private static ObjectMapper objectMapper;
 
     @Autowired
     public void setObjectMapper(ObjectMapper objectMapper) {
-        ChatHandler.objectMapper = objectMapper;
+        SimpleChatHandler.objectMapper = objectMapper;
     }
 
 
@@ -42,36 +40,32 @@ public class ChatHandler extends TextWebSocketHandler {
 
     @Autowired
     public void setSessionManager(WebSocketSessionManager sessionManager) {
-        ChatHandler.sessionManager = sessionManager;
+        SimpleChatHandler.sessionManager = sessionManager;
     }
 
-    private static MessageCacheManager messageCacheManager;
-
-    @Autowired
-    public void setMessageCacheManager(MessageCacheManager messageCacheManager) {
-        ChatHandler.messageCacheManager = messageCacheManager;
-    }
 
     private static IPrivateRoomService privateRoomService;
 
     @Autowired
     public void setPrivateRoomService(IPrivateRoomService privateRoomService) {
-        ChatHandler.privateRoomService = privateRoomService;
+        SimpleChatHandler.privateRoomService = privateRoomService;
     }
 
     private static IGroupRoomMembersService groupRoomMembersService;
 
     @Autowired
     public void setGroupRoomMembersService(IGroupRoomMembersService groupRoomMembersService) {
-        ChatHandler.groupRoomMembersService = groupRoomMembersService;
+        SimpleChatHandler.groupRoomMembersService = groupRoomMembersService;
     }
 
-    private static ApplicationEventPublisher eventPublisher;
+    private static IRoomMessageService roomMessageService;
 
     @Autowired
-    public void setEventPublisher(ApplicationEventPublisher eventPublisher) {
-        ChatHandler.eventPublisher = eventPublisher;
+    public void setRoomMessageService(IRoomMessageService roomMessageService) {
+        SimpleChatHandler.roomMessageService = roomMessageService;
     }
+
+
 
 
     @Override
@@ -126,15 +120,10 @@ public class ChatHandler extends TextWebSocketHandler {
             if (sessionManager.isUserOline(sendToUserId.toString())) {
                 // 如果不为空且对方是否在线则发送消息给对方
                 sessionManager.sendMessageToUser(sendToUserId.toString(), Result.success(WebSocketRespCode.RECEIVED_MESSAGE, "接收消息", respMsg));
-                // 异步加载进数据库
-                eventPublisher.publishEvent(new ChatMessageEvent(this, respMsg, true, sendToUserId));
-            } else {
-                // 对方不在线，将消息加载到缓存
-                messageCacheManager.saveUnreadMsgToRedis(sendToUserId, respMsg);
-                log.info("对方不在线，消息已保存到缓存");
-                // 异步加载进数据库
-                eventPublisher.publishEvent(new ChatMessageEvent(this, respMsg, false, sendToUserId));
             }
+
+            // 加载进数据库
+            roomMessageService.saveChatMessageToDB(new ChatMessageEvent(this, respMsg, true, sendToUserId));
             // 通知成功发送消息
             sessionManager.sendMessageBySession(session, Result.success(WebSocketRespCode.SEND_SECCESS, "消息发送成功"));
         } catch (Exception e) {
@@ -155,15 +144,9 @@ public class ChatHandler extends TextWebSocketHandler {
                     // 如果不为空且对方是否在线
                     sessionManager.sendMessageToUser(sendToUserId.toString(), Result.success(WebSocketRespCode.RECEIVED_MESSAGE, "接收消息", respMsg));
                     log.info("发送成功");
-                    // 异步加载进数据库
-                    eventPublisher.publishEvent(new ChatMessageEvent(this, respMsg, true, sendToUserId));
-                } else {
-                    // 对方不在线，将消息加载到缓存
-                    messageCacheManager.saveUnreadMsgToRedis(sendToUserId, respMsg);
-                    log.info("对方不在线，消息已保存到缓存");
-                    // 异步加载进数据库
-                    eventPublisher.publishEvent(new ChatMessageEvent(this, respMsg, false, sendToUserId));
                 }
+                // 加载进数据库
+                roomMessageService.saveChatMessageToDB(new ChatMessageEvent(this, respMsg, true, sendToUserId));
             }
             // 通知成功发送消息
             sessionManager.sendMessageBySession(session, Result.success(WebSocketRespCode.SEND_SECCESS, "消息发送成功"));
@@ -184,12 +167,6 @@ public class ChatHandler extends TextWebSocketHandler {
         // 保存信息 发送信息通知用户 记录日志
         sessionManager.addSession(userId, session);
         log.info("用户建立连接, 用户ID为: {}, 会话ID为: {}", userId, session.getId());
-        // 查询并发送未读消息，随后清空
-        List<ChatRespMessage> chatMessages = messageCacheManager.getUnreadMessageByUserId(sessionManager.getUserIdBySession(session));
-        sessionManager.sendMessageBySession(session, Result.success(WebSocketRespCode.RETURN_UNREAD, "已查询未读数据返回", chatMessages));
-        // 异步修改数据库中数据状态
-        eventPublisher.publishEvent(new ChatStatusToReadEvent(this, chatMessages));
-
     }
 
 

@@ -25,7 +25,7 @@ public class RoomMessageController {
     IRoomMessageService roomMessageService;
 
     @GetMapping("/list")
-    @ApiOperation("获取会话信息")
+    @ApiOperation("获取会话信息（适配客户端）")
     public Result listRoomMessage(Long roomId) {
         return Result.success(roomMessageService.listRoomMessage(roomId));
     }

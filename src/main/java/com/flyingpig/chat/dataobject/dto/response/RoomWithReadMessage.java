@@ -8,9 +8,9 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class RoomSession {
+public class RoomWithReadMessage {
     private Long roomId;
     private String roomName;
-    List<RoomMessage> historyMessage;
+    List<RoomMessage> readMessage;
     private Byte type;
 }

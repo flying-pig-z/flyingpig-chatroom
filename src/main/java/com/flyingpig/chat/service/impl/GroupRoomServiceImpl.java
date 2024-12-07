@@ -4,17 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flyingpig.chat.dataobject.constant.RoomType;
 import com.flyingpig.chat.dataobject.dto.response.RoomInfo;
-import com.flyingpig.chat.dataobject.dto.response.RoomSession;
+import com.flyingpig.chat.dataobject.dto.response.RoomWithReadMessage;
 import com.flyingpig.chat.dataobject.eneity.GroupRoom;
 import com.flyingpig.chat.dataobject.eneity.GroupRoomMembers;
-import com.flyingpig.chat.mapper.GroupRoomMapper;
-import com.flyingpig.chat.mapper.GroupRoomMembersMapper;
-import com.flyingpig.chat.mapper.RoomMessageMapper;
+import com.flyingpig.chat.dataobject.eneity.Room;
+import com.flyingpig.chat.mapper.*;
 import com.flyingpig.chat.service.IGroupRoomService;
-import com.flyingpig.chat.util.UserContext;
+import com.flyingpig.chat.util.UserIdContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,16 +36,25 @@ public class GroupRoomServiceImpl extends ServiceImpl<GroupRoomMapper, GroupRoom
     @Autowired
     RoomMessageMapper roomMessageMapper;
 
+    @Autowired
+    RoomMapper roomMapper;
+
+    @Autowired
+    PrivateRoomMapper privateRoomMapper;
+
+    @Autowired
+    GroupRoomMapper groupRoomMapper;
+
     @Override
-    public List<RoomSession> listUserGroupRoomSession() {
+    public List<RoomWithReadMessage> listUserGroupRoomWithReadMessage() {
         // 根据用户id查询私聊房间
-        List<RoomSession> roomSessions = new ArrayList<>();
+        List<RoomWithReadMessage> roomWithReadMessageList = new ArrayList<>();
         List<GroupRoomMembers> groupRoomMembersList = groupRoomMembersMapper.selectList(
                 new LambdaQueryWrapper<GroupRoomMembers>()
-                        .eq(GroupRoomMembers::getUserId, UserContext.getUser()));
+                        .eq(GroupRoomMembers::getUserId, UserIdContext.getUserId()));
         for (GroupRoomMembers groupRoomMembers : groupRoomMembersList) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
-            roomSessions.add(new RoomSession()
+            roomWithReadMessageList.add(new RoomWithReadMessage()
                     .setType(RoomType.GROUP_ROOM)
                     .setRoomId(groupRoomMembers.getGroupRoomId())
                     .setRoomName(
@@ -53,10 +62,10 @@ public class GroupRoomServiceImpl extends ServiceImpl<GroupRoomMapper, GroupRoom
                                     .map(GroupRoom::getName)  // 如果非 null，则获取 name
                                     .orElse("Default Room Name") // 如果是 null，则使用默认值
                     )
-                    .setHistoryMessage(roomMessageMapper.selectHistoryReadMsg(groupRoomMembers.getGroupRoomId()))
+                    .setReadMessage(roomMessageMapper.selectHistoryReadMsg(groupRoomMembers.getGroupRoomId()))
             );
         }
-        return roomSessions;
+        return roomWithReadMessageList;
     }
 
     @Override
@@ -70,7 +79,7 @@ public class GroupRoomServiceImpl extends ServiceImpl<GroupRoomMapper, GroupRoom
         List<RoomInfo> roomInfos = new ArrayList<>();
         List<GroupRoomMembers> groupRoomMembersList = groupRoomMembersMapper.selectList(
                 new LambdaQueryWrapper<GroupRoomMembers>()
-                        .eq(GroupRoomMembers::getUserId, UserContext.getUser()));
+                        .eq(GroupRoomMembers::getUserId, UserIdContext.getUserId()));
         for (GroupRoomMembers groupRoomMembers : groupRoomMembersList) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
             roomInfos.add(new RoomInfo()
@@ -84,6 +93,15 @@ public class GroupRoomServiceImpl extends ServiceImpl<GroupRoomMapper, GroupRoom
             );
         }
         return roomInfos;
+    }
+
+    @Override
+    public Boolean addGroupRoom(String name, String introduce) {
+        Room room = new Room(null, LocalDateTime.now(), RoomType.PRIVATE_ROOM);
+        roomMapper.insert(room);
+        groupRoomMapper.insert(new GroupRoom(room.getId(), Long.parseLong(UserIdContext.getUserId()), introduce, name));
+        groupRoomMembersMapper.insert(new GroupRoomMembers(null, room.getId(), Long.parseLong(UserIdContext.getUserId())));
+        return true;
     }
 
 }

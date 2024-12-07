@@ -23,9 +23,9 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("application")
+@TableName("group_application")
 @ApiModel(value="Application对象", description="申请表")
-public class Application implements Serializable {
+public class GroupApplication implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,14 +36,21 @@ public class Application implements Serializable {
     private Long applyUser;
 
     @ApiModelProperty(value = "申请添加的群聊")
-    private Long roomId;
+    private Long applyRoom;
+
+
+    @ApiModelProperty(value = "申请信息")
+    private String applyMsg;
 
 
     @ApiModelProperty(value = "审核人")
     private Long auditUser;
 
+
+
     @ApiModelProperty(value = "申请时间")
     private LocalDateTime applyTime;
+
 
 
     @ApiModelProperty(value = "申请状态，-1为不通过，0为未通过，1为通过")

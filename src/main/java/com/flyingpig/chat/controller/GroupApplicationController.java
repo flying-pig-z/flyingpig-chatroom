@@ -2,7 +2,7 @@ package com.flyingpig.chat.controller;
 
 
 import com.flyingpig.chat.dataobject.common.Result;
-import com.flyingpig.chat.service.IApplicationService;
+import com.flyingpig.chat.service.IGroupApplicationService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +16,16 @@ import org.springframework.web.bind.annotation.*;
  * @since 2024-11-07
  */
 @RestController
-@RequestMapping("/application")
-public class ApplicationController {
+@RequestMapping("/group-application")
+public class GroupApplicationController {
 
     @Autowired
-    IApplicationService applicationService;
+    IGroupApplicationService applicationService;
 
     @PostMapping
-    @ApiOperation("发起申请添加好友/群聊")
-    public Result publishApplication(Long roomId) {
-        return Result.success(applicationService.publishApplication(roomId));
+    @ApiOperation("发起申请添加群聊")
+    public Result publishGroupApplication(Long roomId, String applyMsg) {
+        return Result.success(applicationService.publishGroupApplication(roomId, applyMsg));
     }
 
     @GetMapping("/send")
@@ -35,16 +35,15 @@ public class ApplicationController {
     }
 
     @GetMapping("/receive")
-    @ApiOperation("查询发送的申请")
+    @ApiOperation("查询发送的群聊申请")
     public Result selectReceiveApplication() {
         return Result.success(applicationService.selectReceiveApplication());
     }
 
-    @PutMapping
-    @ApiOperation("修改申请的状态")
-    public Result judgeApplication(Long applicationId, Byte status) {
-        applicationService.judgeApplication(applicationId, status);
-        return Result.success();
+    @PutMapping("/{applicationId}")
+    @ApiOperation("决定同意/不同意群聊申请")
+    public Result judgeApplication(@PathVariable Long applicationId, Byte status) {
+        return Result.success(applicationService.judgeApplication(applicationId, status));
     }
 
 }

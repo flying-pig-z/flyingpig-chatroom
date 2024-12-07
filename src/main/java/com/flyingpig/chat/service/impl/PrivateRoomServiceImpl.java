@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flyingpig.chat.dataobject.constant.RoomType;
 import com.flyingpig.chat.dataobject.dto.response.RoomInfo;
-import com.flyingpig.chat.dataobject.dto.response.RoomSession;
+import com.flyingpig.chat.dataobject.dto.response.RoomWithReadMessage;
 import com.flyingpig.chat.dataobject.eneity.PrivateRoom;
 import com.flyingpig.chat.mapper.PrivateRoomMapper;
 import com.flyingpig.chat.mapper.RoomMessageMapper;
 import com.flyingpig.chat.mapper.UserMapper;
 import com.flyingpig.chat.service.IPrivateRoomService;
-import com.flyingpig.chat.util.UserContext;
+import com.flyingpig.chat.util.UserIdContext;
 import com.flyingpig.chat.websocket.message.resp.ChatRespMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,30 +39,30 @@ public class PrivateRoomServiceImpl extends ServiceImpl<PrivateRoomMapper, Priva
     RoomMessageMapper roomMessageMapper;
 
     @Override
-    public List<RoomSession> listUserPrivateRoomSession() {
+    public List<RoomWithReadMessage> listUserPrivateRoomWithReadMessage() {
         // 根据用户id查询私聊房间
-        List<RoomSession> roomSessions = new ArrayList<>();
+        List<RoomWithReadMessage> roomSessions = new ArrayList<>();
 
         List<PrivateRoom> privateRooms1 = this.privateRoomMapper.selectList(
                 new LambdaQueryWrapper<PrivateRoom>()
-                        .eq(PrivateRoom::getUserIdA, UserContext.getUser()));
+                        .eq(PrivateRoom::getUserIdA, UserIdContext.getUserId()));
         for (PrivateRoom room : privateRooms1) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
-            roomSessions.add(new RoomSession()
+            roomSessions.add(new RoomWithReadMessage()
                     .setType(RoomType.PRIVATE_ROOM).setRoomId(room.getId())
                     .setRoomName(userMapper.selectById(room.getUserIdB()).getUsername())
-                    .setHistoryMessage(roomMessageMapper.selectHistoryReadMsg(room.getId())));
+                    .setReadMessage(roomMessageMapper.selectHistoryReadMsg(room.getId())));
         }
 
         List<PrivateRoom> privateRooms2 = this.privateRoomMapper.selectList(
                 new LambdaQueryWrapper<PrivateRoom>()
-                        .eq(PrivateRoom::getUserIdB, UserContext.getUser()));
+                        .eq(PrivateRoom::getUserIdB, UserIdContext.getUserId()));
         for (PrivateRoom room : privateRooms2) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
-            roomSessions.add(new RoomSession()
+            roomSessions.add(new RoomWithReadMessage()
                     .setType(RoomType.PRIVATE_ROOM).setRoomId(room.getId())
                     .setRoomName(userMapper.selectById(room.getUserIdA()).getUsername())
-                    .setHistoryMessage(roomMessageMapper.selectHistoryReadMsg(room.getId())));
+                    .setReadMessage(roomMessageMapper.selectHistoryReadMsg(room.getId())));
         }
         return roomSessions;
     }
@@ -91,7 +91,7 @@ public class PrivateRoomServiceImpl extends ServiceImpl<PrivateRoomMapper, Priva
 
         List<PrivateRoom> privateRooms1 = this.privateRoomMapper.selectList(
                 new LambdaQueryWrapper<PrivateRoom>()
-                        .eq(PrivateRoom::getUserIdA, UserContext.getUser()));
+                        .eq(PrivateRoom::getUserIdA, UserIdContext.getUserId()));
         for (PrivateRoom room : privateRooms1) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
             roomInfos.add(new RoomInfo()
@@ -101,7 +101,7 @@ public class PrivateRoomServiceImpl extends ServiceImpl<PrivateRoomMapper, Priva
 
         List<PrivateRoom> privateRooms2 = this.privateRoomMapper.selectList(
                 new LambdaQueryWrapper<PrivateRoom>()
-                        .eq(PrivateRoom::getUserIdB, UserContext.getUser()));
+                        .eq(PrivateRoom::getUserIdB, UserIdContext.getUserId()));
         for (PrivateRoom room : privateRooms2) {
             // 封装返回结果，其中roomId为房间id，roomName为对方用户名作为会话名
             roomInfos.add(new RoomInfo()

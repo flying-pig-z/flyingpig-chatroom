@@ -42,6 +42,9 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    // 默认头像
+    private final String avatarUrl = "https://flying-pig-z.oss-cn-beijing.aliyuncs.com/%E9%A3%9E%E7%BF%94%E7%9A%84%E7%8C%AA.jpeg";
+
     @Value("${spring.mail.username}")
     private String emailUserName;
 
@@ -82,7 +85,7 @@ public class LoginServiceImpl implements LoginService {
     public void registerUser(EmailRegisterReq emailRegisterReq) {
         userMapper.insert(new User(null, emailRegisterReq.getUsername(),
                 new BCryptPasswordEncoder().encode(emailRegisterReq.getPassword()),
-                emailRegisterReq.getEmail(), null));
+                emailRegisterReq.getEmail(), avatarUrl));
     }
 
     @Override

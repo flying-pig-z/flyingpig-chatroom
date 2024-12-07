@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-public class ApplicationInfo {
+public class GroupApplicationInfo {
 
     private Long applicationId;
 
@@ -17,8 +17,9 @@ public class ApplicationInfo {
 
     private String roomName;
 
+    private String applyMsg;
+
     private LocalDateTime applyTime;
 
     private Byte status;
-
 }
